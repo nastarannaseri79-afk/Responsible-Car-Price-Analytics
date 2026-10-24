@@ -153,10 +153,10 @@ if page == "Project Overview & README":
 
     st.subheader("📌 Executive Conclusion & Project Alignment")
     st.markdown(
-        "- **Price Distribution & Volume:** Pricing is right-skewed; sedans and hatchbacks drive inventory volume[cite: 4].\n"
+        "- **Price Distribution & Volume:** Pricing is right-skewed; sedans and hatchbacks drive inventory volume.\n"
         "- **Core Drivers:** Engine size, horsepower, and curb weight exhibit the strongest positive relationship with valuation.\n"
-        "- **Group Variances:** Premium brands (Jaguar, Porsche, BMW) and convertibles command top market price tiers[cite: 4].\n"
-        "- **Predictive Success:** Random Forest regressor achieves high prediction accuracy ($R^2 = 0.956$)."
+        "- **Group Variances:** Premium brands (Jaguar, Porsche, BMW) and convertibles command top market price tiers.\n"
+        "- **Predictive Performance:** Random Forest regressor achieves strong test-set accuracy ($R^2 = 0.956$), serving as an indicative baseline for price exploration."
     )
 
 # ==========================================
@@ -223,30 +223,30 @@ elif page == "EDA & Dashboard Insights":
             st.plotly_chart(fig4, use_container_width=True)
 
 # ==========================================
-# SECTION 4: Model Performance, Plain-English Reliability & Ethics
+# SECTION 4: Model Performance, Reliability & Ethics Governance
 # ==========================================
 elif page == "Model Performance & Ethics":
     st.title("📈 Model Evaluation & Ethics Governance")
 
     col1, col2, col3 = st.columns(3)
-    col1.metric(label="Accuracy Score (R²)", value="0.956", help="Close to 1.0 means near-perfect prediction power.")
-    col2.metric(label="Typical Error (MAE)", value="£1,355", help="Average dollar/pound difference between predicted and actual prices.")
-    col3.metric(label="Prediction Spread (RMSE)", value="£1,863", help="Measures larger prediction errors.")
+    col1.metric(label="Accuracy Score (R²)", value="0.956", help="Indicates strong fit on the reported test set.")
+    col2.metric(label="Typical Error (MAE)", value="$1,355", help="Average difference between predicted and actual prices on test data.")
+    col3.metric(label="Prediction Spread (RMSE)", value="$1,863", help="Measures standard deviation of prediction residuals.")
 
     st.write("")
 
     col_inf, col_eth = st.columns(2)
     with col_inf:
-        st.subheader("🔍 Plain-English Reliability & Top Drivers")
+        st.subheader("🔍 Model Reliability & Scope")
         st.markdown(
-            "- **How reliable is it?** With an accuracy score of **0.956**, the model explains over 95% of car price variations, making it highly trustworthy for valuations.\n"
-            "- **What drives the price most?** Engine size, horsepower, and vehicle weight are the main factors influencing the final estimate.\n"
-            "- **For Non-Technical Users:** This tool acts like an expert appraiser that instantly computes fair market value based on physical specs."
+            "- **Model Fit:** An $R^2 = 0.956$ indicates a strong fit on the reported test set, though it does not guarantee identical accuracy across every unobserved vehicle or future market shift.\n"
+            "- **Primary Drivers:** Engine size, horsepower, and vehicle curb weight serve as key quantitative features influencing predictions.\n"
+            "- **Intended Use:** Outputs are estimated prices for exploratory and educational analysis, not definitive commercial appraisals or guaranteed fair market values."
         )
     with col_eth:
-        st.subheader("🔒 Ethical Governance & Transparency (LO1)")
+        st.subheader("🔒 Ethical Governance & Limitations (LO1)")
         st.markdown(
-            "- **Fairness & Bias:** The model relies *strictly* on objective engineering specifications (no personal, demographic, or subjective brand bias).\n"
-            "- **Target Leakage Control:** Features directly derived from the target price were completely excluded during training to maintain integrity.\n"
-            "- **Privacy & Compliance:** Built using 100% public, anonymized automotive datasets with zero personal data risk."
+            "- **Fairness & Bias Controls:** Relying on physical engineering features serves as a helpful safeguard against personal bias; however, underlying data distribution limits may still produce uneven error rates across rare vehicle classes.\n"
+            "- **Target Leakage:** Target-derived features were excluded during training to preserve pipeline integrity and prevent artificially inflated performance.\n"
+            "- **Privacy & Data Sourcing:** Built using public, anonymized automotive data to minimize privacy risks, though continuous dataset audits remain essential for governance."
         )
