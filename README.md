@@ -44,11 +44,19 @@ The project follows a staged workflow using three Jupyter notebooks, a Power BI 
 | `jupyter_notebooks/Data_Preparing_and_Cleaning.ipynb` | Inspects, cleans, and prepares the original dataset; standardises manufacturer names; creates derived features; exports the cleaned data. |
 | `jupyter_notebooks/Exploratory_Data_Analysis_Statistics.ipynb` | Examines distributions and relationships, creates visualisations, and conducts selected statistical tests. |
 | `jupyter_notebooks/Machin_Learning.ipynb` | Builds and compares regression models, evaluates predictions, analyses errors, and examines feature importance. |
-| `app.py` | Streamlit application with overview metrics, filters, EDA charts, a price-prediction interface, and model-performance and ethics information. |
+| `app.py` | Streamlit application with four sections: Project Overview, Price Predictor, EDA Insights, and Model Performance & Ethics. |
 | `car_prices_dashboard.pbix` | Power BI dashboard carried forward from Project 2. |
 | `outputs/car_prices_cleaned.csv` | Cleaned dataset used by the later analysis and Streamlit app. |
-| `outputs/random_forest_model.pkl` | Expected location of the saved model pipeline used by the Streamlit predictor, if included in the repository. |
+| `outputs/random_forest_model.pkl` | Saved Random Forest regression model used by the Streamlit predictor. |\n| `outputs/preprocessor.pkl` | Fitted preprocessing object used to transform the predictor's 25 input features into the encoded format expected by the model. |
 
+
+## Data source and attribution
+
+The dataset was obtained from the Kaggle dataset page **Car Price Prediction Multiple Linear Regression**, published by **Manish Kumar**. The page describes the dataset as being used for predicting car prices with multiple linear regression, RFE, and VIF. The dataset page shown in the source screenshot is:
+
+- Kaggle dataset: https://www.kaggle.com/datasets/hellbuoy/car-price-prediction
+
+**Attribution and reuse note:** This citation identifies the Kaggle page used to locate the dataset. Before redistributing the raw data, confirm the dataset's licence and any reuse conditions on the Kaggle page. The screenshot does not show a licence, so this README does not assume that unrestricted redistribution is permitted.
 
 ## Data and preparation
 
@@ -95,13 +103,15 @@ Three models are evaluated:
 - **Linear Regression:** provides a simple linear model for comparison;
 - **Random Forest Regression:** can capture nonlinear relationships and interactions between features.
 
-The principal model-comparison output in the machine-learning notebook reports the following results:
+The final recorded model-comparison output in the machine-learning notebook reports the following test-set results:
 
 | Model | MAE | RMSE | R² |
 |---|---:|---:|---:|
 | Dummy Regressor | 6,339.80 | 8,889.04 | -0.001 |
 | Linear Regression | 2,703.331 | 3,811.845 | 0.816 |
 | Random Forest Regression | 1,355.177 | 1,862.830 | 0.956 |
+
+**Note on results from different runs:** During development, the model was trained and evaluated more than once, so earlier notebook outputs or draft documentation may contain slightly different metrics. The table above records the final reported test-set results used in this README. The five-fold cross-validation results below are separate because they summarise performance across multiple folds rather than one held-out test split. To reproduce the final results, keep the feature set, train/test split, random seeds, preprocessing steps, and saved model/preprocessor pair consistent.
 
 MAE is the mean absolute difference between predicted and actual prices. RMSE gives greater weight to larger errors. R² describes how much variation in test-set prices is explained by the model relative to a mean-prediction baseline; it is **not** a percentage of individual predictions that are correct.
 
@@ -113,14 +123,14 @@ The test set contains only 41 vehicles. These results are promising for this dat
 
 ## Streamlit app
 
-The Streamlit application is organised into four sections:
+The current Streamlit application is organised into four sections:
 
-1. **Project Overview & README** — shows the number of cars, average price, median price, maximum price, average price by brand, and the price distribution.
-2. **Real-Time Price Predictor** — allows users to enter or select horsepower, engine size, cylinder count, curb weight, average MPG, and drive-wheel type to request a price estimate.
-3. **EDA & Dashboard Insights** — presents interactive charts for engine size versus price, horsepower versus price, price by body style, and curb weight versus price. Brand, fuel-type, and drivetrain filters apply to the overview and EDA pages.
-4. **Model Performance & Ethics** — presents model evaluation metrics, explains important predictors and intended use, and discusses fairness, target leakage, privacy, and limitations.
+1. **Project Overview** — presents summary statistics and key findings from the cleaned dataset.
+2. **Price Predictor** — collects vehicle characteristics, constructs the complete set of 25 model inputs, transforms them using the fitted preprocessor, and passes the encoded data to the saved Random Forest model.
+3. **EDA Insights** — provides compact interactive charts exploring relationships between price and vehicle characteristics.
+4. **Model Performance & Ethics** — reports the recorded model metrics and explains model reliability, fairness considerations, data provenance, privacy, and limitations.
 
-The app uses Streamlit for the interface, Pandas for data handling, Plotly Express for interactive charts, and Joblib to load the saved model. The Power BI `.pbix` dashboard is retained from Project 2; Streamlit provides an additional interactive interface rather than replacing the earlier dashboard.
+The app uses Streamlit, Pandas, Plotly Express, and Joblib. The predictor requires `outputs/car_prices_cleaned.csv`, `outputs/random_forest_model.pkl`, and `outputs/preprocessor.pkl`. The saved model and fitted preprocessor must come from the same final training run. If a required file cannot be loaded or prediction fails, the app should report an error rather than present a hand-written formula as a model prediction. The Power BI `.pbix` dashboard is retained from Project 2; Streamlit adds another interface rather than replacing it.
 
 ## Ethical practice, privacy, and governance
 
@@ -152,7 +162,7 @@ The fixed train/test split makes the evaluation reproducible, but the test set c
 
 ### Prediction interface and model integration
 
-The Streamlit app loads the trained Random Forest model from `outputs/random_forest_model.pkl` to generate real-time price estimates based on vehicle specifications. A lightweight fallback error-handling method is retained defensively in the application code for robustness, but primary deployment relies fully on the serialized machine learning pipeline. Both the cleaned dataset (`outputs/car_prices_cleaned.csv`) and the saved model (`outputs/random_forest_model.pkl`) are present at the expected paths, ensuring the predictor operates directly on the trained model outputs.
+The Streamlit app loads the trained Random Forest model from `outputs/random_forest_model.pkl` and the fitted preprocessor from `outputs/preprocessor.pkl`. The preprocessor transforms the complete set of input features into the representation expected by the model. These two artefacts must come from the same final training run. The app should show an error if required artefacts cannot be loaded or prediction fails, rather than silently substituting a hand-written formula.
 
 ### Legal and social implications
 
@@ -181,14 +191,14 @@ The notebooks contain model evaluation, cross-validation, visual checks, and sta
 |---|---|---|
 | Data preparation | Check dataset dimensions, missing values, duplicate rows, and cleaned export. | Documented in Notebook 1; rerun end-to-end before submission. |
 | Statistical analysis | Reproduce correlation tests, Welch's t-test, and Welch's ANOVA with Holm correction. | Results are recorded in Notebook 2; rerun to confirm reproducibility. |
-| Model evaluation | Reproduce test-set MAE, RMSE, and R² for all three models. | Results are recorded in Notebook 3; metric labels and displayed values need reconciliation. |
+| Model evaluation | Reproduce test-set MAE, RMSE, and R² for all three models. | Final recorded results are documented above; check older outputs against the final run before submission. |
 | Cross-validation | Reproduce the five-fold Random Forest scores. | Results are recorded in Notebook 3; rerun to confirm. |
 | Streamlit startup | Launch `app.py` and confirm all four sections load. | Needs a recorded manual test. |
-| Required files | Confirm the cleaned CSV and saved model exist at the paths expected by the app. | Must be checked in the final repository. |
-| Predictor | Test representative valid inputs and confirm the trained model generates a prediction. | Needs a recorded manual test. |
-| Missing-model/error handling | Ensure a missing model or failed prediction is not silently replaced with a formula-based result. | Improvement needed in the current app. |
+| Required files | Confirm the cleaned CSV, saved model, and fitted preprocessor exist at the paths expected by the app. | Check all three files and confirm the model and preprocessor came from the same run. |
+| Predictor | Test representative valid inputs and confirm the trained model generates a prediction. | A local prediction test succeeded; test additional inputs and record the results before submission. |
+| Missing-model/error handling | Ensure a missing model or failed prediction is not silently replaced with a formula-based result. | Verify error handling with a deliberate test if time permits. |
 | Filters and charts | Check that filters update the overview and EDA pages and that charts remain readable. | Needs a recorded manual test. |
-| Units and labels | Ensure the notebook, Power BI dashboard, and Streamlit app use consistent currency and metric descriptions. | Improvement needed; currency labels currently conflict. |
+| Units and labels | Ensure the notebook, Power BI dashboard, and Streamlit app use consistent currency and metric descriptions. | Streamlit currently uses USD labels; verify notebook and Power BI labels agree. |
 | Power BI | Open the `.pbix` file and check visuals and interactions. | Needs a recorded manual test. |
 
 ## Limitations and future improvements
@@ -198,8 +208,9 @@ The current project has several limitations:
 - **Small dataset:** There are 205 vehicle records and only 41 observations in the held-out test set.
 - **Market relevance:** The dataset may not represent current prices or the full range of vehicles in a wider market.
 - **Uneven groups:** Some vehicle categories have relatively few observations, making group-level error estimates less stable.
-- **Metric consistency:** The machine-learning notebook contains slightly different displayed metric values in different sections, and currency symbols are not consistent across all outputs.
-- **Prediction fallback:** The Streamlit app can return a formula-based estimate if the saved model is missing or prediction fails.
+- **Run-to-run metric differences:** Earlier development runs may contain slightly different metric values. This README identifies the final recorded test-set results; older values should be labelled as earlier-run results rather than presented as the final run.
+- **Currency consistency:** Streamlit currently uses USD labels; confirm that the notebook and Power BI dashboard use the same currency label.
+- **Model artefacts:** The saved Random Forest model and fitted preprocessor must come from the same final training run.
 - **Testing:** End-to-end notebook execution and interactive application checks need to be recorded before claiming that the complete project has passed all tests.
 - **Data provenance:** The exact dataset source and reuse conditions should be verified and cited.
 
@@ -218,8 +229,6 @@ My next priorities are to standardise the currency and metrics, improve the app'
 - **Streamlit** — interactive web-app interface.
 - **Joblib** — loading the saved machine-learning pipeline.
 - **Git and GitHub** — version control and project documentation.
-
-The required library versions should be recorded in the repository's `requirements.txt` file.
 
 ## Run the project locally
 
@@ -258,8 +267,9 @@ The Streamlit app loads:
 
 - `outputs/car_prices_cleaned.csv`
 - `outputs/random_forest_model.pkl`
+- `outputs/preprocessor.pkl`
 
-Make sure both files are present at those exact paths. If the cleaned CSV needs to be regenerated, run the data-preparation notebook first. The saved model must be created or supplied separately if it is not committed to the repository.
+Make sure all three files are present at those exact paths. If the cleaned CSV needs to be regenerated, run the data-preparation notebook first. The saved model and preprocessor must come from the same final training run.
 
 ### 5. Launch Streamlit
 
@@ -273,15 +283,12 @@ Open the local address shown in the terminal. To work with the notebooks, open t
 
 The Streamlit app currently runs locally in VS Code. It has not been deployed to a public hosting service, so there is no live application link yet. The Power BI dashboard is provided as a `.pbix` file and requires compatible Power BI software to open.
 
-Before deployment, the app's fallback prediction behaviour, data paths, dependency file, metric labels, and currency labels should be corrected and tested. Deployment should only be described as complete once a public build has been launched and checked.
 
 ## Use of AI tools and acknowledgement
 
-During development, I used AI tools as learning and problem-solving support. In my Project 2 workflow, I used ChatGPT for planning the project structure, developing hypotheses, debugging support, Markdown explanations, and grammar; GitHub Copilot in VS Code mainly for debugging; and Gemini to compare alternative suggestions.
+During development, I used AI tools as learning and problem-solving support. In my Project 3 workflow, I used ChatGPT for planning the project structure, developing hypotheses, debugging support, Markdown explanations, and grammar; GitHub Copilot in VS Code mainly for debugging; and Gemini to compare alternative suggestions.
 
 AI-generated suggestions were treated as suggestions rather than automatically accepted answers. They needed to be checked against the data, code, and actual outputs. For example, when a chart of the most expensive cars did not look as expected, I investigated the underlying records and found duplicate `CarName` values. This reinforced the importance of checking data and assumptions instead of relying on a suggested fix without validation.
-
-Any external code, tutorials, data sources, or other material incorporated into the project should be acknowledged in the repository. The source and licence of the car-price dataset should be verified and cited before redistribution.
 
 ## Reflection
 
@@ -292,5 +299,5 @@ One of the most important lessons is that a strong model score does not automati
 ## References
 
 - Code Institute, *Ethical Practice and Communication in Data — Assessment Handbook* (Project 3 handbook supplied with this project).
-- Car-price dataset and accompanying data dictionary — verify and add the exact source citation and reuse conditions before final submission.
-- Any external tutorials, code snippets, or libraries used should be acknowledged where appropriate.
+- Kumar, Manish. *Car Price Prediction Multiple Linear Regression*. Kaggle dataset page: https://www.kaggle.com/datasets/hellbuoy/car-price-prediction. Accessed for the dataset page shown in the project source screenshot; verify the dataset licence and reuse conditions on Kaggle before redistribution.
+
